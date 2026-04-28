@@ -1,0 +1,21 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - frontend_next:/app/.next
+    working_dir: /app
+    command: sh -lc "npm install && npm run dev -- -H 0.0.0.0 --turbopack"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_SITE_URL=http://localhost:3000
+    restart: unless-stopped
+
+volumes:
+  frontend_next:
+

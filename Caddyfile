@@ -1,0 +1,15 @@
+{$SITE_DOMAIN} {
+  encode gzip zstd
+
+  header {
+    Referrer-Policy "strict-origin-when-cross-origin"
+    X-Content-Type-Options "nosniff"
+    X-Frame-Options "DENY"
+    Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  }
+
+  handle {
+    reverse_proxy frontend:3000
+  }
+}
+
