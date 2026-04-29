@@ -1,3 +1,4 @@
+/** @type {import('next').NextConfig} */
 const csp = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -10,7 +11,7 @@ const csp = [
 ].join("; ");
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {output: "export",
+const nextConfig = {
   async headers() {
     return [
       {
@@ -32,4 +33,3 @@ const nextConfig = {output: "export",
 };
 
 export default nextConfig;
-

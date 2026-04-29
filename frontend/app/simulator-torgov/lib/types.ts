@@ -5,7 +5,7 @@ export type AuctionLot = {
   title: string;
   areaM2: number | null;
   areaSotok: number | null;
-  districtName: string;
+  districtName?: string;
   purpose: string;
   cadastralNumber: string;
   startPriceRub: number;

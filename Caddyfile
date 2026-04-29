@@ -8,8 +8,12 @@
     Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
   }
 
+  @backend path /api/* /health
+  handle @backend {
+    reverse_proxy backend:4000
+  }
+
   handle {
     reverse_proxy frontend:3000
   }
 }
-

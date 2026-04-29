@@ -9,6 +9,7 @@ import { formatRub, formatSotokWord } from "../lib/format";
 
 const ROUND_COUNT = 10;
 const SLIDER_STEP = 1000;
+const SLIDER_NUDGE_KEY = "zemlytech.auctionSim.sliderNudge.v2";
 
 type RevealState =
   | { status: "guessing"; guessRub: number }
@@ -49,11 +50,43 @@ export default function SimulatorPlayPage() {
     if (!mounted) return;
     if (!currentLot) return;
     const min = currentLot.startPriceRub;
-    const max = currentLot.startPriceRub * 3;
     const initial = clampToStep(min, SLIDER_STEP);
     setReveal({ status: "guessing", guessRub: initial });
     setImageFailed(false);
   }, [mounted, currentLot]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (!currentLot) return;
+    if (currentIndex !== 0) return;
+    if (reveal?.status !== "guessing") return;
+
+    try {
+      if (sessionStorage.getItem(SLIDER_NUDGE_KEY) === "1") return;
+      sessionStorage.setItem(SLIDER_NUDGE_KEY, "1");
+    } catch {
+      // ignore
+    }
+
+    const min = currentLot.startPriceRub;
+    const max = currentLot.startPriceRub * 3;
+    const base = clampToStep(min, SLIDER_STEP);
+    const span = Math.max(SLIDER_STEP * 8, Math.floor((max - min) * 0.18));
+    const bumped = clampToStep(Math.min(max, base + span), SLIDER_STEP);
+
+    const t1 = window.setTimeout(() => {
+      setReveal((prev) => (prev?.status === "guessing" ? { status: "guessing", guessRub: bumped } : prev));
+    }, 450);
+
+    const t2 = window.setTimeout(() => {
+      setReveal((prev) => (prev?.status === "guessing" ? { status: "guessing", guessRub: base } : prev));
+    }, 1100);
+
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [mounted, currentLot, currentIndex, reveal?.status]);
 
   if (!mounted) {
     return <main className="mx-auto w-full max-w-xl px-4 pb-28 pt-6" />;
@@ -146,14 +179,10 @@ export default function SimulatorPlayPage() {
         </div>
 
         <div className="p-5">
-          {currentLot.districtName ? (
-            <div className="text-xs font-medium uppercase tracking-wide text-[#0B1B14]/60">
-              {currentLot.districtName}
-            </div>
-          ) : null}
           <h2 className="text-base font-semibold leading-snug">
             {currentLot.purpose}
             {currentLot.areaSotok != null ? `, ${formatSotokWord(currentLot.areaSotok)}` : ""}
+            {currentLot.districtName ? ` — ${currentLot.districtName}` : ""}
           </h2>
 
           <div className="mt-4 rounded-2xl border border-[#26CD94]/20 bg-[#F6FFFC] p-4">

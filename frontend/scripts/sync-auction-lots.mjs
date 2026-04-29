@@ -162,12 +162,7 @@ async function resolveLocalImageUrl(publicImagesDir, id) {
 }
 
 async function main() {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 20000);
-  const res = await fetch(CSV_URL, {
-    headers: { "user-agent": "Mozilla/5.0" },
-    signal: ctrl.signal
-  }).finally(() => clearTimeout(t));
+  const res = await fetch(CSV_URL, { headers: { "user-agent": "Mozilla/5.0" } });
   if (!res.ok) throw new Error(`Failed to fetch CSV: ${res.status} ${res.statusText}`);
   const csvText = await res.text();
   const rows = parseCsv(csvText);
@@ -225,13 +220,10 @@ async function main() {
   }
 
   const out = await mapLimit(outRaw, 6, async (lot) => {
-    // Prefer local images always (local-only in prod).
     const existingLocal = await resolveLocalImageUrl(publicImagesDir, lot.id);
     if (existingLocal) return { ...lot, imageUrl: existingLocal };
 
-    if (!DOWNLOAD_IMAGES) {
-      return { ...lot, imageUrl: "/simulator-torgov/placeholder.svg" };
-    }
+    if (!DOWNLOAD_IMAGES) return { ...lot, imageUrl: "/simulator-torgov/placeholder.svg" };
 
     const remoteImageUrl = lot.imageUrl;
     if (!remoteImageUrl) return { ...lot, imageUrl: "/simulator-torgov/placeholder.svg" };
